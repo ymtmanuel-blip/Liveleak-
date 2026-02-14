@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiveLeak Media - Ymtmanuel Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+
+        body {
+            background-color: #0d0d0d;
+            color: #e5e5e5;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Scanline / Signal-Filter Effekt Overlay */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 9999;
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        /* Noise Effekt */
+        .noise {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9998; opacity: 0.04; pointer-events: none;
+            background: url('https://media.giphy.com/media/oEI9uWUicGuS4/giphy.gif');
+        }
+
+        .top-bar {
+            background-color: #000;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 11px;
+            color: #777;
+            text-transform: uppercase;
+            border-bottom: 1px solid #222;
+            letter-spacing: 1px;
+        }
+
+        .header-main {
+            background-color: #1a1a1a;
+            padding: 15px 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Logo nach links */
+            border-bottom: 3px solid #8b0000;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        @media (min-width: 640px) {
+            .header-main {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        .logo-box {
+            background-color: #8b0000;
+            padding: 5px 12px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 15px;
+            user-select: none;
+        }
+
+        @media (min-width: 640px) {
+            .logo-box { margin-bottom: 0; }
+        }
+
+        .text-live { 
+            color: #fff; 
+            font-size: 26px; 
+            font-weight: 900; 
+            display: flex;
+            align-items: baseline;
+        }
+
+        /* i-Punkt Signal Effekt */
+        .signal-i {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .signal-i::before, .signal-i::after {
+            content: "";
+            position: absolute;
+            width: 1.5px;
+            height: 6px;
+            background-color: rgba(255,255,255,0.8);
+            top: 8px;
+            animation: pulse-signal 1.2s infinite;
+        }
+        
+        .signal-i::before { left: -3.5px; border-radius: 1px; }
+        .signal-i::after { right: -3.5px; border-radius: 1px; animation-delay: 0.4s; }
+
+        @keyframes pulse-signal {
+            0% { opacity: 0.3; transform: scaleY(0.8); }
+            50% { opacity: 1; transform: scaleY(1.3); }
+            100% { opacity: 0.3; transform: scaleY(0.8); }
+        }
+
+        .leak-tag { 
+            background-color: #fff; 
+            color: #8b0000; 
+            padding: 0 6px; 
+            border-radius: 2px; 
+            font-size: 26px; 
+            font-weight: 900; 
+            margin-left: 4px; 
+        }
+
+        .nav-btn {
+            color: #999;
+            text-transform: uppercase;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 8px 15px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .nav-btn:hover, .nav-btn.active { color: #fff; }
+        .nav-btn.active { border-bottom: 2px solid #8b0000; }
+
+        .page-content { display: none; }
+        .page-content.active { display: block; animation: fadeIn 0.4s ease-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .drive-viewer-container {
+            background-color: #000;
+            border: 2px solid #222;
+            border-radius: 4px;
+            overflow: hidden;
+            height: 650px;
+            position: relative;
+        }
+
+        .drive-iframe { width: 100%; height: 100%; border: none; }
+
+        .blink { animation: blinker 1.5s linear infinite; color: #ff0000; }
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        .footer {
+            background-color: #080808;
+            border-top: 1px solid #222;
+            padding: 30px;
+            text-align: center;
+            margin-top: 50px;
+            color: #444;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="noise"></div>
+
+    <div class="top-bar">
+        <span class="flex items-center gap-2">
+            <span class="blink">●</span> LIVE SIGNAL: ACTIVE
+        </span>
+        <span class="ml-auto hidden sm:inline">Ymtmanuel Archive System v2.1</span>
+    </div>
+
+    <header class="header-main">
+        <div class="logo-box" onclick="switchPage('home')">
+            <div class="text-live">L<span class="signal-i">i</span>ve</div>
+            <span class="leak-tag">Leak</span>
+        </div>
+        <nav class="flex gap-2">
+            <div id="nav-home" class="nav-btn active" onclick="switchPage('home')">Startseite</div>
+            <div id="nav-drive" class="nav-btn" onclick="switchPage('drive')">Media Lager</div>
+            <div id="nav-upload" class="nav-btn" onclick="switchPage('upload')">Upload Info</div>
+        </nav>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-4 sm:p-6">
+        
+        <!-- STARTSEITE -->
+        <div id="page-home" class="page-content active">
+            <div class="bg-[#1a1a1a] p-10 rounded-lg border border-[#333] text-center mb-8 relative overflow-hidden">
+                <div class="absolute top-2 right-4 text-[10px] text-gray-700 font-mono">REC [00:00:13:24]</div>
+                <h1 class="text-4xl sm:text-5xl font-black uppercase mb-6 tracking-tighter">Media Repository</h1>
+                <p class="text-gray-400 text-base sm:text-lg mb-8 max-w-2xl mx-auto">Das zentrale Archiv für alle Video-Uploads von Ymtmanuel. Sichern, Dokumentieren, Archivieren.</p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <button onclick="switchPage('drive')" class="bg-white text-black px-8 py-3 font-bold uppercase text-xs rounded hover:bg-gray-200 transition shadow-lg">Lager ansehen</button>
+                    <button onclick="switchPage('upload')" class="bg-[#8b0000] text-white px-8 py-3 font-bold uppercase text-xs rounded hover:bg-red-700 transition shadow-lg">Video einreichen</button>
+                </div>
+            </div>
+            
+            <div class="bg-black border border-gray-900 p-4 flex items-center justify-between rounded text-[10px]">
+                <span class="text-red-600 font-bold uppercase blink">System Update</span>
+                <span class="text-gray-500 italic">Version 2.1 Online - Signal-Verschlüsselung aktiv</span>
+                <span class="text-gray-700 font-mono">YMT-ID: ARCH-778-X</span>
+            </div>
+        </div>
+
+        <!-- MEDIA LAGER -->
+        <div id="page-drive" class="page-content">
+            <div class="mb-4 flex justify-between items-center px-1">
+                <h2 class="text-xl font-black uppercase text-red-600">Media Lager</h2>
+                <a href="https://drive.google.com/drive/folders/1BwQDl6noO-kWMA1ISPHQzNvq2OhN99so" target="_blank" class="text-[10px] text-blue-500 uppercase font-bold">In Drive öffnen</a>
+            </div>
+            <div class="drive-viewer-container">
+                <iframe class="drive-iframe" src="https://drive.google.com/embeddedfolderview?id=1BwQDl6noO-kWMA1ISPHQzNvq2OhN99so#grid" allowfullscreen></iframe>
+            </div>
+        </div>
+
+        <!-- UPLOAD INFO -->
+        <div id="page-upload" class="page-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-[#111] border border-gray-800 p-8 rounded">
+                    <h3 class="text-red-700 font-bold text-xs uppercase mb-4">Schritt 1: In Drive laden</h3>
+                    <a href="https://drive.google.com/drive/folders/1BwQDl6noO-kWMA1ISPHQzNvq2OhN99so" target="_blank" class="block bg-blue-600 text-white text-center py-3 rounded font-bold uppercase text-xs">Google Drive Ordner</a>
+                </div>
+                <div class="bg-[#111] border border-gray-800 p-8 rounded">
+                    <h3 class="text-red-700 font-bold text-xs uppercase mb-4">Schritt 2: Bestätigung</h3>
+                    <p class="text-sm text-gray-400 mb-2">Sende eine Mail an:</p>
+                    <div class="bg-black p-2 border border-dashed border-gray-600 text-red-500 font-mono text-center">liveleakbyymt@gmail.com</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        Copyright &copy; 2026 LiveLeak Media &bull; Designed by Ymtmanuel &bull; <span class="text-red-900">V.2.1.0-STABLE</span>
+    </footer>
+
+    <script>
+        function switchPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            document.getElementById('nav-' + pageId).classList.add('active');
+            window.scrollTo(0,0);
+        }
+    </script>
+</body>
+</html>
+
